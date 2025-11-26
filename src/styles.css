@@ -1,0 +1,101 @@
+/* Fullscreen layout */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #f0f4f8, #dbeafe);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Game container */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  max-width: 860px;
+  width: 100%;
+}
+
+/* Controls row */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Button */
+.btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.btn:hover {
+  background: #1e40af;
+}
+
+/* Status tag */
+.tag {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  font-weight: 500;
+}
+
+/* Canvas */
+.canvas {
+  width: 800px;
+  height: 500px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  touch-action: none;
+}
+
+/* Hint text */
+.hint {
+  color: #374151;
+  font-size: 15px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Popup messages */
+.popup {
+  margin-top: 12px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Popup styles by status */
+.popup.hit {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.popup.won {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.popup.idle {
+  background: #fef3c7;
+  color: #92400e;
+}
