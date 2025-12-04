@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/safe-path-game/static/css/main.ab65ee24.css",
-    "main.js": "/safe-path-game/static/js/main.93ec0130.js",
+    "main.js": "/safe-path-game/static/js/main.0ecc43e6.js",
     "static/js/453.fa21eb35.chunk.js": "/safe-path-game/static/js/453.fa21eb35.chunk.js",
     "index.html": "/safe-path-game/index.html",
     "main.ab65ee24.css.map": "/safe-path-game/static/css/main.ab65ee24.css.map",
-    "main.93ec0130.js.map": "/safe-path-game/static/js/main.93ec0130.js.map",
+    "main.0ecc43e6.js.map": "/safe-path-game/static/js/main.0ecc43e6.js.map",
     "453.fa21eb35.chunk.js.map": "/safe-path-game/static/js/453.fa21eb35.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ab65ee24.css",
-    "static/js/main.93ec0130.js"
+    "static/js/main.0ecc43e6.js"
   ]
 }
