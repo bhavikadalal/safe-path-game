@@ -14,27 +14,89 @@ const B: Point = { x: 720, y: 80 };
 
 type Status = 'idle' | 'drawing' | 'hit' | 'won';
 
-function generateObstacles(): Obstacle[] {
-  const rects: Obstacle[] = Array.from({ length: 4 }, () => ({
-    type: 'rect',
-    x: Math.random() * 600 + 50,
-    y: Math.random() * 400 + 20,
-    width: 100 + Math.random() * 60,
-    height: 30 + Math.random() * 20,
-  }));
-
-  const circles: Obstacle[] = Array.from({ length: 4 }, () => ({
-    type: 'circle',
-    center: {
-      x: Math.random() * 700 + 30,
-      y: Math.random() * 400 + 30,
-    },
-    radius: 30 + Math.random() * 30,
-  }));
-
-  return [...rects, ...circles];
+// --- Overlap helpers ---
+function rectOverlapsCircle(rect: { x: number; y: number; width: number; height: number }, center: Point, radius: number) {
+  const closestX = Math.max(rect.x, Math.min(center.x, rect.x + rect.width));
+  const closestY = Math.max(rect.y, Math.min(center.y, rect.y + rect.height));
+  const dx = center.x - closestX;
+  const dy = center.y - closestY;
+  return dx * dx + dy * dy <= radius * radius;
 }
 
+function rectsOverlap(r1: { x: number; y: number; width: number; height: number }, r2: { x: number; y: number; width: number; height: number }) {
+  return !(
+    r1.x + r1.width < r2.x ||
+    r2.x + r2.width < r1.x ||
+    r1.y + r1.height < r2.y ||
+    r2.y + r2.height < r1.y
+  );
+}
+
+function circlesOverlap(c1: { center: Point; radius: number }, c2: { center: Point; radius: number }) {
+  return distance(c1.center, c2.center) <= c1.radius + c2.radius;
+}
+
+function rectCircleOverlap(rect: { x: number; y: number; width: number; height: number }, circ: { center: Point; radius: number }) {
+  const closestX = Math.max(rect.x, Math.min(circ.center.x, rect.x + rect.width));
+  const closestY = Math.max(rect.y, Math.min(circ.center.y, rect.y + rect.height));
+  const dx = circ.center.x - closestX;
+  const dy = circ.center.y - closestY;
+  return dx * dx + dy * dy <= circ.radius * circ.radius;
+}
+
+function circleOverlapsCircle(circ: { center: Point; radius: number }, other: { center: Point; radius: number }) {
+  return distance(circ.center, other.center) <= circ.radius + other.radius;
+}
+
+// --- Obstacle generator ---
+function generateObstacles(): Obstacle[] {
+  const obstacles: Obstacle[] = [];
+
+  // Rectangles
+  while (obstacles.filter(o => o.type === 'rect').length < 4) {
+    const rect = {
+      type: 'rect' as const,
+      x: Math.random() * 600 + 50,
+      y: Math.random() * 400 + 20,
+      width: 100 + Math.random() * 60,
+      height: 30 + Math.random() * 20,
+    };
+
+    // Check against A/B
+    if (rectOverlapsCircle(rect, A, A_RADIUS + 20) || rectOverlapsCircle(rect, B, B_RADIUS + 20)) continue;
+
+    // Check against existing obstacles
+    const overlap = obstacles.some(ob =>
+      ob.type === 'rect'
+        ? rectsOverlap(rect, ob as any)
+        : rectCircleOverlap(rect, ob as any)
+    );
+    if (!overlap) obstacles.push(rect);
+  }
+
+  // Circles
+  while (obstacles.filter(o => o.type === 'circle').length < 4) {
+    const circ = {
+      type: 'circle' as const,
+      center: { x: Math.random() * 700 + 30, y: Math.random() * 400 + 30 },
+      radius: 30 + Math.random() * 30,
+    };
+
+    // Check against A/B
+    if (circleOverlapsCircle(circ, { center: A, radius: A_RADIUS + 20 }) ||
+        circleOverlapsCircle(circ, { center: B, radius: B_RADIUS + 20 })) continue;
+
+    // Check against existing obstacles
+    const overlap = obstacles.some(ob =>
+      ob.type === 'circle'
+        ? circlesOverlap(circ, ob as any)
+        : rectCircleOverlap(ob as any, circ)
+    );
+    if (!overlap) obstacles.push(circ);
+  }
+
+  return obstacles;
+}
 
 export default function PathGame() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -101,25 +163,18 @@ export default function PathGame() {
     }
   }, [path, status, obstacles]);
 
-  // Pointer events give consistent behavior across mouse/trackpad/touch
   function toCanvasPoint(e: React.PointerEvent<HTMLCanvasElement>): Point {
     const rect = canvasRef.current!.getBoundingClientRect();
-
-    // If CSS scales the canvas, adjust coordinates accordingly
     const scaleX = CANVAS_W / rect.width;
     const scaleY = CANVAS_H / rect.height;
-
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
-
     return { x, y };
   }
 
   function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     const p = toCanvasPoint(e);
     const distA = distance(p, A);
-
-    // Must start inside A
     if (distA <= A_RADIUS + 4) {
       canvasRef.current?.setPointerCapture(e.pointerId);
       setStatus('drawing');
@@ -139,7 +194,6 @@ export default function PathGame() {
     if (hitObstacle) {
       setStatus('hit');
       setPopup('💥 Game Over! You hit an obstacle.');
-      // release capture so pointerup is not required to stop
       canvasRef.current?.releasePointerCapture(e.pointerId);
       return;
     }
@@ -164,6 +218,8 @@ export default function PathGame() {
     setPopup(null);
     setObstacles(generateObstacles());
   }
+
+
 
   return (
     <div className="container">
